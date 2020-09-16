@@ -80,7 +80,7 @@ Connection: Keep-Alive'''
         img.write(response.content)
         img.close()
     code = verification_code(img_path)
-    print(code)
+    # print(code)
 
     login_header = '''Content-Type: application/x-www-form-urlencoded; charset=UTF-8
 Accept: */*
@@ -213,7 +213,7 @@ if __name__ == '__main__':
                          'name="pageIndex">1</parameter><parameter name="pageSize">10000</parameter></requestdata> ' \
                          % (pre_date.strftime('%Y-%m-%d %H:%M:%S'), now.strftime('%Y-%m-%d %H:%M:%S'))
 
-    accept_list_file = datetime.datetime.now().strftime("%Y%m%d%H%M%S-accept") + '.xlsx'
+    accept_list_file = now.strftime("%Y%m%d%H%M%S-accept") + '.xlsx'
     export_data(accept_request_xml, cookies, filename=accept_list_file)
 
     finish_request_xml = '<?xml version="1.0" encoding="gb2312"?><requestdata><parameter ' \
@@ -225,10 +225,10 @@ if __name__ == '__main__':
                          'name="endDate">%s</parameter><parameter ' \
                          'name="DateType">2</parameter><parameter name="searchFlag">true</parameter><parameter ' \
                          'name="staffId">223214</parameter><parameter name="pageIndex">1</parameter><parameter ' \
-                         'name="pageSize">10000</parameter></requestdata>' \
+                         'name="pageSize">30000</parameter></requestdata>' \
                          % (current_month_first_day.strftime('%Y-%m-%d %H:%M:%S'), now.strftime('%Y-%m-%d %H:%M:%S'))
 
-    finish_list_file = datetime.datetime.now().strftime("%Y%m%d%H%M%S-finish") + '.xlsx'
+    finish_list_file = now.strftime("%Y%m%d%H%M%S-finish") + '.xlsx'
     export_data(finish_request_xml, cookies, filename=finish_list_file)
 
     cfg_org = pd.read_excel("config.xlsx", sheet_name="sheet1")
@@ -251,7 +251,7 @@ if __name__ == '__main__':
     day_accept.reset_index(inplace=True)
     day_accept = pd.merge(cfg_mgr, day_accept, on="网格长", how="outer").fillna(0)
     day_accept['网点当日受理量'] = day_accept['网点当日受理量'].apply(int)  # 今日受理量
-    print(day_accept)
+    # print(day_accept)
 
     # 计算昨日受理量
     pre_accept = al[(al['受理时间'] >= pre_date.strftime("%Y-%m-%d %H:%M:%S")) & (
@@ -261,7 +261,7 @@ if __name__ == '__main__':
     pre_accept.reset_index(inplace=True)
     pre_accept = pd.merge(cfg_mgr, pre_accept, on="网格长", how="outer").fillna(0)
     pre_accept['网点昨日受理量'] = pre_accept['网点昨日受理量'].apply(int)  # 昨日受理量
-    print(pre_accept)
+    # print(pre_accept)
 
     # 竣工信息
     finish_list = pd.read_excel(finish_list_file, '全量工单信息')
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     o_month_finish.reset_index(inplace=True)
     o_month_finish = pd.merge(cfg_mgr, o_month_finish, on="网格长", how="outer").fillna(0)
     o_month_finish['网点当月竣工量'] = o_month_finish['网点当月竣工量'].apply(int)  # 昨日受理量
-    print(o_month_finish)
+    # print(o_month_finish)
 
     # 网格当月竣工量
     gfl = pd.merge(finish_list, cfg_grd, how="left", on="所属网格")
@@ -288,7 +288,7 @@ if __name__ == '__main__':
     g_month_finish.reset_index(inplace=True)
     g_month_finish = pd.merge(cfg_mgr, g_month_finish, on="网格长", how="outer").fillna(0)
     g_month_finish['网格当月竣工量'] = g_month_finish['网格当月竣工量'].apply(int)  # 昨日受理量
-    print(g_month_finish)
+    # print(g_month_finish)
 
     # 网格受理信息
     gal = pd.merge(accept_list, cfg_grd, how="left", on="所属网格")  # 比对网格长、网格经理（受理清单）
@@ -301,7 +301,7 @@ if __name__ == '__main__':
     g_day_accept.reset_index(inplace=True)
     g_day_accept = pd.merge(cfg_mgr, g_day_accept, on="网格长", how="outer").fillna(0)
     g_day_accept['网格当日受理量'] = g_day_accept['网格当日受理量'].apply(int)  # 今日受理量
-    print(g_day_accept)
+    # print(g_day_accept)
 
     # 计算网格昨日受理量
     g_pre_accept = gal[(gal['受理时间'] >= pre_date.strftime("%Y-%m-%d %H:%M:%S")) & (
@@ -311,7 +311,7 @@ if __name__ == '__main__':
     g_pre_accept.reset_index(inplace=True)
     g_pre_accept = pd.merge(cfg_mgr, g_pre_accept, on="网格长", how="outer").fillna(0)
     g_pre_accept['网格昨日受理量'] = g_pre_accept['网格昨日受理量'].apply(int)  # 昨日受理量
-    print(g_pre_accept)
+    # print(g_pre_accept)
 
     result = pd.merge(o_month_finish, day_accept, on='网格长', how='left')
     result = pd.merge(result, pre_accept,  on='网格长', how='left')
@@ -320,4 +320,47 @@ if __name__ == '__main__':
     result = pd.merge(result, g_pre_accept,  on='网格长', how='left')
 
     print(result)
-    result.to_excel("result.xlsx", index=True)
+    result.to_excel("grid_static.xlsx", index=True, sheet_name='网格')
+
+    accept_request_xml = '<?xml version="1.0" encoding="gb2312"?><requestdata><parameter ' \
+                         'name="reportCode">orderNotRealTime</parameter><parameter ' \
+                         'name="ttOrgId">10000000</parameter><parameter name="priv">infoHide</parameter><parameter ' \
+                         'name="areaIds">4,102,41,42,43,44,45</parameter><parameter ' \
+                         'name="serviceIds">220323,220372</parameter><parameter ' \
+                         'name="searchType">OrdMoni</parameter><parameter ' \
+                         'name="startDate">%s</parameter><parameter name="endDate">%s</parameter><parameter ' \
+                         'name="DateType">1</parameter><parameter ' \
+                         'name="searchFlag">true</parameter><parameter name="staffId">223214</parameter><parameter ' \
+                         'name="pageIndex">1</parameter><parameter name="pageSize">30000</parameter></requestdata> ' \
+                         % (current_month_first_day.strftime('%Y-%m-%d %H:%M:%S'), now.strftime('%Y-%m-%d %H:%M:%S'))
+
+    accept_list_file = now.strftime("%Y%m%d%H%M%S-accept") + '.xlsx'
+    export_data(accept_request_xml, cookies, filename=accept_list_file)
+
+    accept_list = pd.read_excel(accept_list_file, '全量工单信息')
+    month_accept = accept_list.groupby(accept_list['区县']).agg({'工单编号': 'count'}).rename(
+        columns={'工单编号': '区县当月受理量'})  # 区县月受理量
+    month_accept = pd.DataFrame(month_accept)
+    month_accept.reset_index(inplace=True)
+
+    today_accept = accept_list[accept_list['受理时间'] >= init_date.strftime("%Y-%m-%d %H:%M:%S")]\
+        .groupby(accept_list['区县']).agg({'工单编号': 'count'}).rename(
+        columns={'工单编号': '区县当日受理'})
+    today_accept = pd.DataFrame(today_accept)
+    today_accept.reset_index(inplace=True)
+
+    month_finish = finish_list.groupby(finish_list['区县']).agg({'工单编号': 'count'}).rename(
+        columns={'工单编号': '区县当月竣工量'})  # 区县月竣工量
+    month_finish = pd.DataFrame(month_finish)
+    month_finish.reset_index(inplace=True)
+
+    today_finish = finish_list[finish_list['竣工时间'] >= init_date.strftime("%Y-%m-%d %H:%M:%S")]\
+        .groupby(finish_list['区县']).agg({'工单编号': 'count'}).rename(
+        columns={'工单编号': '区县当日竣工'})
+    today_finish = pd.DataFrame(today_finish)
+    today_finish.reset_index(inplace=True)
+
+    result = pd.merge(month_accept, today_accept, on='区县', how='left')
+    result = pd.merge(result, month_finish, on='区县', how='left')
+    result = pd.merge(result, today_finish, on='区县', how='left')
+    result.to_excel("county_static.xlsx", index=True, sheet_name='区县')
