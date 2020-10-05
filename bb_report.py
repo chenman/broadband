@@ -148,24 +148,26 @@ if __name__ == '__main__':
     ofl = pd.merge(finish_list, cfg_org, how="left", on="受理部门ID")  # 比对网格长、网格经理（受理清单）
 
     # 网点当月竣工量
-    o_month_finish = ofl.groupby(ofl['网格长']).agg({'工单编号': 'count'}).rename(
-        columns={'工单编号': '网点当月竣工量'})
+    o_month_finish = ofl[(ofl['竣工时间'] < init_date.strftime("%Y-%m-%d %H:%M:%S"))].groupby(ofl['网格长'])\
+        .agg({'工单编号': 'count'}).rename(
+        columns={'工单编号': '网点当月截止昨日竣工量'})
     o_month_finish = pd.DataFrame(o_month_finish)
     o_month_finish.reset_index(inplace=True)
     o_month_finish = pd.merge(cfg_mgr, o_month_finish, on="网格长", how="outer").fillna(0)
-    o_month_finish['网点当月竣工量'] = o_month_finish['网点当月竣工量'].apply(int)  # 昨日受理量
+    o_month_finish['网点当月截止昨日竣工量'] = o_month_finish['网点当月截止昨日竣工量'].apply(int)  # 昨日受理量
     # print(o_month_finish)
 
     # 网格当月竣工量
     gfl = pd.merge(finish_list, cfg_grd, how="left", on="所属网格")
 
     # 网格当月竣工量
-    g_month_finish = gfl.groupby(gfl['网格长']).agg({'工单编号': 'count'}).rename(
-        columns={'工单编号': '网格当月竣工量'})
+    g_month_finish = gfl[(gfl['竣工时间'] < init_date.strftime("%Y-%m-%d %H:%M:%S"))].groupby(gfl['网格长'])\
+        .agg({'工单编号': 'count'}).rename(
+        columns={'工单编号': '网格当月截止昨日竣工量'})
     g_month_finish = pd.DataFrame(g_month_finish)
     g_month_finish.reset_index(inplace=True)
     g_month_finish = pd.merge(cfg_mgr, g_month_finish, on="网格长", how="outer").fillna(0)
-    g_month_finish['网格当月竣工量'] = g_month_finish['网格当月竣工量'].apply(int)  # 昨日受理量
+    g_month_finish['网格当月截止昨日竣工量'] = g_month_finish['网格当月截止昨日竣工量'].apply(int)  # 昨日受理量
     # print(g_month_finish)
 
     # 网格受理信息
@@ -234,25 +236,25 @@ if __name__ == '__main__':
     受理部门 截止昨日月竣工	今日受理	昨日受理
     """
     org_day_accept = accept_list_2d[(accept_list_2d['受理时间'] >= init_date.strftime("%Y-%m-%d %H:%M:%S"))] \
-        .groupby(accept_list_2d['受理部门']).agg({'工单编号': 'count'}).rename(
+        .groupby(accept_list_2d['受理部门ID']).agg({'工单编号': 'count'}).rename(
         columns={'工单编号': '网点今日受理'})
     org_day_accept = pd.DataFrame(org_day_accept)
     org_day_accept.reset_index(inplace=True)
 
     org_pre_accept = accept_list_2d[(accept_list_2d['受理时间'] >= pre_date.strftime("%Y-%m-%d %H:%M:%S"))
                                     & (accept_list_2d['受理时间'] < init_date.strftime("%Y-%m-%d %H:%M:%S"))] \
-        .groupby(accept_list_2d['受理部门']).agg({'工单编号': 'count'}).rename(
+        .groupby(accept_list_2d['受理部门ID']).agg({'工单编号': 'count'}).rename(
         columns={'工单编号': '网点昨日受理'})
     org_pre_accept = pd.DataFrame(org_pre_accept)
     org_pre_accept.reset_index(inplace=True)
 
     org_total_finish = finish_list[(finish_list['竣工时间'] < init_date.strftime("%Y-%m-%d %H:%M:%S"))] \
-        .groupby(finish_list['受理部门']).agg({'工单编号': 'count'}).rename(
+        .groupby(finish_list['受理部门ID']).agg({'工单编号': 'count'}).rename(
         columns={'工单编号': '网点截止昨日竣工量'})
     org_total_finish = pd.DataFrame(org_total_finish)
     org_total_finish.reset_index(inplace=True)
-    result = pd.merge(org_total_finish, org_day_accept, on='受理部门', how='outer').fillna(0)
-    result = pd.merge(result, org_pre_accept, on='受理部门', how='outer').fillna(0)
+    result = pd.merge(org_total_finish, org_day_accept, on='受理部门ID', how='outer').fillna(0)
+    result = pd.merge(result, org_pre_accept, on='受理部门ID', how='outer').fillna(0)
     result.to_excel('org_static.xlsx', index=True, sheet_name='网点')
 
     """
