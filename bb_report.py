@@ -104,6 +104,7 @@ if __name__ == '__main__':
     pre_date = init_date - datetime.timedelta(days=1)
     current_month_first_day = datetime.date(year=now.year, month=now.month, day=1)
 
+    print(now.strftime("%Y-%m-%d %H:%M:%S"))
     accept_list_file = now.strftime("%Y%m%d%H%M%S-accept") + '.xlsx'
     finish_list_file = now.strftime("%Y%m%d%H%M%S-finish") + '.xlsx'
 
