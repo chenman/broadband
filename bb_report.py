@@ -1,7 +1,7 @@
 # !usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-@author:Chen Man
+@author:Li LinYe
 @file:  bb_report
 @time:  2020/9/20
 """
